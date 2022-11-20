@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Transactions;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -295,7 +296,6 @@ void GameTime(Dictionary<string, (string position, int rating)> players)
     else
     {
         Console.WriteLine("\nUtakmica je zavrsila nerjesenim rezultatom:");
-        foreach (var player in startingEleven.Keys)
         opponents["Hrvatska"] = (opponents["Hrvatska"].points+1, opponents["Hrvatska"].gd);
         opponents[listOfOpponents[gamesPlayed]] = (opponents[listOfOpponents[gamesPlayed]].points + 1, opponents[listOfOpponents[gamesPlayed]].gd);
     }
@@ -488,6 +488,99 @@ void PrintTable()
     Console.WriteLine("\n");
 }
 
+void AddNewPlayer()
+{
+    if (playersInSquad.Count >= 26)
+    {
+        Console.WriteLine("\nU ekipi ne moze biti vise od 26 igraca!\n");
+        return;
+    }
+    Console.WriteLine("\nUnesite ime igraca:");
+    var name = Console.ReadLine();
+    foreach(var players in playersInSquad)
+    {
+        if(name == players.Key)
+        {
+            Console.WriteLine("Igrac cije ste ime unjeli je vec u timu!\n");
+            return;
+        }
+    }
+    Console.WriteLine("\nUnesite poziciju igraca(GK,DF,MF,FW)");
+    var position = Console.ReadLine();
+    if(position=="FW" || position=="MF" || position == "DF" || position == "GK")
+    {
+        Console.WriteLine("\nUnesite rating:");
+        int rating = int.Parse(Console.ReadLine());
+
+        playersInSquad.Add(name, (position, rating));
+        return;
+    }
+    Console.WriteLine("Krivi unos pozicije\n");
+}
+
+void DeletePlayer()
+{
+    Console.WriteLine("\nUnesite ime i prezime igraca kojeg zelite izbrisati:");
+    var name = Console.ReadLine();
+    foreach (var players in playersInSquad)
+    {
+        if (name == players.Key)
+        {
+            playersInSquad.Remove(name);
+            Console.WriteLine($"Igrac {players.Key} je uklonjen iz tima.\n");
+            return;
+        }
+    }
+    Console.WriteLine("Igrac cije ste ime unjeli nije u timu!\n");
+}
+
+void EditName()
+{
+    Console.WriteLine("\nUnesite ime i prezime igraca kojeg zelite urediti");
+    var name = Console.ReadLine();
+    if(playersInSquad.ContainsKey(name) is false)
+    {
+        Console.WriteLine("Igrac kojeg ste unjeli ne postoji!\n");
+    }
+    Console.WriteLine("Unesite novo ime i prezime koje mu zelite dati:");
+    var newName = Console.ReadLine();
+    playersInSquad.Add(newName, (playersInSquad[name].position, playersInSquad[name].rating));
+    playersInSquad.Remove(name);
+    Console.WriteLine("\n");
+}
+
+void EditRating()
+{
+    Console.WriteLine("\nUnesite ime i prezime igraca kojeg zelite urediti");
+    var name = Console.ReadLine();
+    if (playersInSquad.ContainsKey(name) is false)
+    {
+        Console.WriteLine("Igrac kojeg ste unjeli ne postoji!\n");
+    }
+    Console.WriteLine("Unesite novi rating koji mu zelite dati:");
+    var newRating = int.Parse(Console.ReadLine());
+    playersInSquad[name] = (playersInSquad[name].position, newRating);
+    Console.WriteLine("\n");
+}
+
+void EditPosition()
+{
+    Console.WriteLine("\nUnesite ime i prezime igraca kojeg zelite urediti");
+    var name = Console.ReadLine();
+    if (playersInSquad.ContainsKey(name) is false)
+    {
+        Console.WriteLine("Igrac kojeg ste unjeli ne postoji!\n");
+    }
+    Console.WriteLine("\nUnesite novu poziciju igraca(GK,DF,MF,FW)");
+    var position = Console.ReadLine();
+    if (position == "FW" || position == "MF" || position == "DF" || position == "GK")
+    {
+        playersInSquad[name] = (position, playersInSquad[name].rating);
+        return;
+    }
+    Console.WriteLine("Krivi unos pozicije\n");
+}
+
 int userInput;
 
 do
@@ -559,7 +652,48 @@ do
                 case 11:
                     PrintTable();
                     break;
+                default:
+                    Console.WriteLine("KRIVI UNOS!");
+                    break;
             }
+            break;
+        case 4:
+            Console.WriteLine("\n1 - Unos novog igraca");
+            Console.WriteLine("2 - Brisanje igraca");
+            Console.WriteLine("3 - Uredivanje igraca");
+
+            var userInput3 = int.Parse(Console.ReadLine());
+
+            switch (userInput3){
+                case 1:
+                    AddNewPlayer();
+                    break;
+                case 2:
+                    DeletePlayer();
+                    break;
+                case 3:
+                    Console.WriteLine("1 - Uredi ime i prezime igraca");
+                    Console.WriteLine("2 - Uredi poziciju igraca");
+                    Console.WriteLine("3 - Uredi rating igraca");
+
+                    var userInput4 = int.Parse(Console.ReadLine());
+
+                    switch (userInput4)
+                    {
+                        case 1:
+                            EditName();
+                            break;
+                        case 2:
+                            EditRating();
+                            break;
+                        case 3:
+                            EditPosition();
+                            break;
+                    }
+
+                    break;
+            }
+
             break;
     }
 
